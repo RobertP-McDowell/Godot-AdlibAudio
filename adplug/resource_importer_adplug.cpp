@@ -1,5 +1,3 @@
-/*  resource_importer_adplug.cpp  */
-
 #include "resource_importer_adplug.h"
 #include "audio_stream_adlib.h"
 #include "core/io/file_access.h"
@@ -13,9 +11,6 @@
 #include "core/string/print_string.h"
 #include <array>
 
-// #include <ogg/ogg.h>
-// #include <vorbis/codec.h>
-
 using namespace std;
 
 String ResourceImporterAdplug::get_importer_name() const {
@@ -26,6 +21,8 @@ String ResourceImporterAdplug::get_visible_name() const {
 	return "adplugstr";
 }
 
+// Comment in a file extension here to enable support for it.
+// There is a maximum one importer can support, so you must comment out another.
 void ResourceImporterAdplug::get_recognized_extensions(List<String> *p_extensions) const {
 	String new_ext[] = {
 	"a2m",
@@ -68,7 +65,7 @@ void ResourceImporterAdplug::get_recognized_extensions(List<String> *p_extension
 	// "sa2",
 	// "sat",
 	// "sci",
-	"sdb",
+	// "sdb",
 	"sng",
 	"sop",
 	"sqx",
@@ -77,12 +74,11 @@ void ResourceImporterAdplug::get_recognized_extensions(List<String> *p_extension
 	"xms",
 	"xsm"
 	};
-	for (int i = 0; i < sizeof(new_ext)/sizeof(new_ext[0]); i++) {
+	for (unsigned int i = 0; i < sizeof(new_ext)/sizeof(new_ext[0]); i++) {
 		if (!p_extensions->find(new_ext[i])) {
 			p_extensions->push_back(new_ext[i]);
 		}
 	}
-	// p_extensions->push_back("rad");
 }
 
 String ResourceImporterAdplug::get_save_extension() const {
@@ -145,15 +141,3 @@ Error ResourceImporterAdplug::import(ResourceUID::ID p_source_id, const String &
 
 ResourceImporterAdplug::ResourceImporterAdplug() {
 }
-
-// void ResourceImporterAdplug::_bind_methods() {
-	// ClassDB::bind_static_method("ResourceImporterAdplug", D_METHOD("load_from_buffer", "buffer"), &ResourceImporterAdplug::load_from_buffer);
-	// ClassDB::bind_static_method("ResourceImporterAdplug", D_METHOD("load_from_file", "path"), &ResourceImporterAdplug::load_from_file);
-// }
-
-
-// Ref<AudioStreamAdlib> ResourceImporterAdplug::load_from_file(const String &p_path) {
-	// Vector<uint8_t> file_data = FileAccess::get_file_as_bytes(p_path);
-	// ERR_FAIL_COND_V_MSG(file_data.is_empty(), Ref<AudioStreamAdlib>(), "Cannot open file '" + p_path + "'.");
-	// return load_from_buffer(file_data);
-// }

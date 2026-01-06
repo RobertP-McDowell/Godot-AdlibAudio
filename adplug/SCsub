@@ -6,12 +6,10 @@ Import("env_modules")
 env_adplug = env_modules.Clone()
 env_adplug.add_source_files(env.modules_sources, "*.cpp") # Add all cpp files to the build
 
-env_adplug.Append(CPPPATH=["libbinio/include/libbinio", "adplug/include"])
-
-
-env.Append(LIBPATH=["libbinio/lib", "adplug/lib"])
+env_adplug.Append(CPPPATH=["include"])
+env.Append(LIBPATH=[Dir("lib").abspath])
 
 if env.msvc:
-    env.Append(LIBS=[File("libbinio/lib/libbinio.lib"), File("adplug/lib/adplug.lib")])
+    env.Append(LIBS=["libadplug.lib", "liblibbinio.lib"])
 else:
-    env.Append(LIBS=["libbinio", "adplug"])
+    env.Append(LIBS=["libadplug.a", "liblibbinio.a"])

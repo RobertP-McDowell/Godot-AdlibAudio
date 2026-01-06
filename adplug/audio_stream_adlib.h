@@ -1,9 +1,7 @@
-/* audiostream_mytone.h */
-
 #ifndef AUDIOSTREAM_ADLIB_H
 #define AUDIOSTREAM_ADLIB_H
 
-#include "audio_stream_playback_adlib.h"
+#include "mutuals.h"
 // #include "core/reference.h"
 // #include "core/resource.h"
 #include "servers/audio/audio_stream.h"

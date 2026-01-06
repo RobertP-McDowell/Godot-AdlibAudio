@@ -1,5 +1,3 @@
-/* audio_stream_playback_adlib.cpp */
-
 #include "audio_stream_playback_adlib.h"
 #include "audio_stream_adlib.h"
 
@@ -20,26 +18,22 @@ AudioStreamPlaybackAdlib::AudioStreamPlaybackAdlib() {
 }
 
 AudioStreamPlaybackAdlib::~AudioStreamPlaybackAdlib() {
-	cout << "Playback Adlib deinit, active = " << playback << "\n";
-	stop();
+	cout << "Playback Adlib deinit, active = " << "\n";
+	if (active) {
+		stop();
+	}
 }
 
 void AudioStreamPlaybackAdlib::stop() {
-	cout << "Stop " << opl << "\n";
 	if (adplug_buffer) {
-		cout << "free buffer" << "\n";
 		memdelete_arr(adplug_buffer);
 	}
 	adplug_buffer = nullptr;
-	if (playback) {
-		cout << "free playback" << "\n";
-		delete playback;
-		playback = nullptr;
-	}
 	if (opl) {
-		cout << "free opl" << "\n";
-		delete opl;
 		opl = nullptr;
+	}
+	if (playback) {
+		playback = nullptr;
 	}
 	towrite = 0;
 	active = false;
@@ -47,61 +41,55 @@ void AudioStreamPlaybackAdlib::stop() {
 
 void AudioStreamPlaybackAdlib::start(double p_from_pos) {
 	active = true;
-	cout << "Playback Adlib start1" << "\n";
 	Copl::ChipType copl_chip_type = static_cast<Copl::ChipType>(base->get_chipset());
 	if (adplug_buffer) {
-		print_error("Already Allocated buffer, Please report");
+		print_error("Error, already Allocated buffer!");
 	}
 	if (opl) {
-		print_error("Already Allocated opl, Please report");
+		print_error("Error, already Allocated opl!");
 	}
 	if (playback) {
-		print_error("Already Allocated playback, Please report");
+		print_error("Error, already Allocated playback!");
 	}
 	if (base->emulator == AudioStreamAdlib::NUKED) { // Opl3, Recommended.
-		opl = new CNemuopl(RATE);
+		opl = make_unique<CNemuopl>(RATE);
 		stereo = true;
 		adplug_buffer = memnew_arr(short, BUFSIZE);
 	}
 	else { // elif (base->emulator == AudioStreamAdlib::ADPLUG) { // Opl2, Dual Opl2, Opl3.
+		unique_ptr<CEmuopl> new_opl = make_unique<CEmuopl>(RATE, BIT16, false);
+		new_opl->settype(copl_chip_type);
+		opl = move(new_opl);
 		if (copl_chip_type == Copl::TYPE_DUAL_OPL2 || copl_chip_type == Copl::TYPE_OPL3) {
-			CEmuopl *new_opl = new CEmuopl(RATE, BIT16, false); // Need to have a throwoway variable, so we can properly access settype().
-			new_opl->settype(copl_chip_type);
-			opl = new_opl;
-			new_opl = NULL;
 			stereo = true;
 			adplug_buffer = memnew_arr(short, STEREO_BUFSIZE);
 		}
 		else {
-			CEmuopl *new_opl = new CEmuopl(RATE, BIT16, false); // Need to have a throwoway variable, so we can properly access settype().
-			new_opl->settype(copl_chip_type);
-			opl = new_opl;
-			new_opl = NULL;
 			stereo = false;
 			adplug_buffer = memnew_arr(short, BUFSIZE);
 		}
 	}
 	if (!adplug_buffer) {
-		cout << "Buffer failed to be allocated" << adplug_buffer << "\n";
+		cout << "Buffer failed to be allocated!" << adplug_buffer << "\n";
 	}
 	if (!opl) {
-		cout << "Opl failed to be allocated" << opl << "\n";
+		cout << "Opl failed to be allocated!" << "\n";
 	}
 	if (base->emulator == AudioStreamAdlib::NUKED) { // Opl3, Recommended.
-		opl = new CNemuopl(RATE);
+		opl = make_unique<CNemuopl>(RATE);
 		stereo = true;
 		adplug_buffer = (short *)memalloc(STEREO_BUFSIZE);
 	}
 	
 	String GlobalFilePath = ProjectSettings::get_singleton()->globalize_path(base->file_path);
 	const char *char_path = GlobalFilePath.utf8();
-	playback = CAdPlug::factory(char_path, &*opl);
+	playback.reset(CAdPlug::factory(char_path, opl.get()));
 	if (!playback) {
 		print_error("Can't load Adplug file! " + base->file_path);
 		stop();
 		return;
 	}
-	playback->seek(unsigned long(p_from_pos*1000));
+	playback->seek((unsigned long)(p_from_pos*1000));
 	towrite = RATE / playback->getrefresh();
 }
 
@@ -111,7 +99,7 @@ void AudioStreamPlaybackAdlib::seek(double p_time) {
 	}
 	cout << "Seek";
 	if (playback) {
-		playback->seek(unsigned long(p_time*1000));
+		playback->seek((unsigned long)(p_time*1000));
 		towrite = RATE / playback->getrefresh();
 	}
 	// if (!playback->update()) {
@@ -160,20 +148,20 @@ int AudioStreamPlaybackAdlib::_process(AudioFrame *p_buffer, unsigned int p_fram
 }
 
 int AudioStreamPlaybackAdlib::mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames) {
-	if (!adplug_buffer || !opl || !playback) {
+	if (!active) {
 		return 0;
 	}
 	unsigned long total_frames_processed = 0, left_over_towrite = p_frames % BUFSIZE;
 	int write = ((unsigned int)p_frames - left_over_towrite) / BUFSIZE;
 	int buffer_offset = 0;
-	for (buffer_offset; buffer_offset < write; buffer_offset++) {
+	for (buffer_offset = 0; buffer_offset < write; buffer_offset++) {
 		unsigned long new_frames_processed = _process(p_buffer, BUFSIZE, BUFSIZE * buffer_offset);
 		total_frames_processed += new_frames_processed;
 		if (new_frames_processed < BUFSIZE) { // Song Ended.
 			break;
 		}
 	}
-	if (left_over_towrite != 0) {
+	if (active && left_over_towrite != 0) {
 		total_frames_processed += _process(p_buffer, left_over_towrite, buffer_offset);
 	}
 	return total_frames_processed;

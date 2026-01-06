@@ -1,6 +1,5 @@
-/* audiostream_mytone.cpp */
-// #include "audio_stream_playback_adlib.h"
 #include "audio_stream_adlib.h"
+#include "audio_stream_playback_adlib.h"
 #include "core/string/print_string.h"
 
 AudioStreamAdlib::AudioStreamAdlib() : mix_rate(44100), hz(639) {

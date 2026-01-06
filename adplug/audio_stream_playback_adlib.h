@@ -1,14 +1,14 @@
-/*  audio_stream_playback_adlib.h */
 #ifndef AUDIO_STREAM_PLAYBACK_ADLIB_H
 #define AUDIO_STREAM_PLAYBACK_ADLIB_H
 
-// #include "audiostream_adlib.h"
+#include "mutuals.h"
 #include "servers/audio/audio_stream.h"
 
 #include "core/io/file_access.h"
 
 #include <iostream>
 #include <vector>
+#include <memory>
 
 // Adplug definitions:
 #include <adplug/adplug.h>
@@ -42,8 +42,8 @@ private:
 	Ref<AudioStreamAdlib> base;
 	bool active; // Is always true if memory has already been allocated for need objects and buffers, false otherwise.
 	
-	Copl *opl = nullptr;
-	CPlayer* playback = nullptr;
+	std::unique_ptr<Copl> opl;
+	std::unique_ptr<CPlayer> playback;
 	short* adplug_buffer = nullptr;
 	unsigned long towrite;
 
