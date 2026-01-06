@@ -17,7 +17,7 @@ Create a `lib/` folder in the adplug folder, place your compiled adplug and libb
 Create an `include/` folder, libbinio headers go directly in it. Your adplug headers need to be in this subfolder `include/adplug/`.
 Finally you can place the AudioStreamIcon.svg file into `godot/editor/icons`, So they show in the editor. And compile!
 
-If you find that your Adlib file isn't being imported, you may need to comment in the extension in `resource_importer_adplug.cpp`.
+If you find that your Adlib file isn't being imported, you may need to comment in the files extension in `resource_importer_adplug.cpp`.
 You can edit the emulator and chip type in the import settings of your adlib file.
 
 # WIP
