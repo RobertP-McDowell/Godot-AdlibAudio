@@ -14,11 +14,12 @@
 #include <adplug/adplug.h>
 #include <adplug/emuopl.h>
 
-#define RATE	48000		 // Output frequency in Hz
-#define BIT16	true		 // true when 16bit samples should be used
+#define RATE	44100		 // Output frequency in Hz
+#define BIT16	true		 // true when int16 (short) samples should be used
 #define BUFSIZE	512			 // Sound buffer size in samples for mono chips
-#define STEREO_BUFSIZE	1024 // Sound buffer size for stereo chips
-#define BIT16_TO_FLOAT	32767.0
+#define STEREO_BUFSIZE	2048 // Sound buffer size for stereo chips
+#define INT16_TO_FLOAT	32767.0
+#define INT8_TO_FLOAT	127.0
 
 class AudioStreamPlaybackAdlib : public AudioStreamPlayback {
 	GDCLASS(AudioStreamPlaybackAdlib, AudioStreamPlayback);
