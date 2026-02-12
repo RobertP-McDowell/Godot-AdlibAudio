@@ -92,13 +92,12 @@ void AudioStreamPlaybackAdlib::seek(double p_time) {
 	if (p_time < 0) {
 		p_time = 0;
 	}
-	cout << "Seek";
 	if (playback) {
+		playback->seek((unsigned long)(p_time*1000));
 		if (!playback->update()) {
 			stop();
 			return;
 		}
-		playback->seek((unsigned long)(p_time*1000));
 		towrite = RATE / playback->getrefresh();
 	}
 }
@@ -123,7 +122,12 @@ int AudioStreamPlaybackAdlib::_process(AudioFrame *p_buffer, unsigned int p_fram
 	towrite -= write;
 	if (towrite <= 0) { // When true we had to make the last buffer smaller, therefore we need to update.
 		if (!playback->update()) {
-			stop();
+			if (base->loop) {
+				seek(0.0);
+			}
+			else {
+				stop();
+			}
 			return write;
 		}
 		towrite = RATE / playback->getrefresh(); // Important to refresh towrite after update.
